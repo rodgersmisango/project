@@ -1,0 +1,70 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deriv Connection Test</title>
+</head>
+<body style="font-family: Arial; padding: 20px;">
+  <h2>Misango Trade — API Test</h2>
+  <p id="status">Testing connection...</p>
+  <pre id="output"
+       style="white-space: pre-wrap; overflow-wrap: anywhere;"></pre>
+
+  <script>
+    const status = document.getElementById("status");
+    const output = document.getElementById("output");
+
+    function log(message, data) {
+      output.textContent += message +
+        (data ? "\n" + JSON.stringify(data, null, 2) : "") +
+        "\n\n";
+    }
+
+    const ws = new WebSocket(
+      "wss://ws.derivws.com/websockets/v3?app_id=1089"
+    );
+
+    ws.onopen = function () {
+      status.textContent = "Connected. Testing API...";
+      log("WebSocket connected.");
+
+      ws.send(JSON.stringify({ ping: 1 }));
+      ws.send(JSON.stringify({
+        active_symbols: "brief",
+        product_type: "basic"
+      }));
+    };
+
+    ws.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      log("API response:", data);
+
+      if (data.error) {
+        status.textContent = "API returned an error.";
+      } else if (data.msg_type === "ping") {
+        status.textContent = "Connected — ping successful.";
+      }
+    };
+
+   
+ws.onerror = function () {
+  status.textContent = "WebSocket connection failed";
+  log("WebSocket error event fired. Check the close details.");
+};
+
+    
+ws.onclose = function (event) {
+  status.textContent = "Connection closed";
+
+  log("WebSocket close details:", {
+    code: event.code,
+    reason: event.reason || "(no reason supplied)",
+    wasClean: event.wasClean
+  });
+
+    };
+  </script>
+</body>
+</html>

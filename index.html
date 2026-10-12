@@ -130,7 +130,7 @@
 
 <body>
   <header>
-    <h2>Misango Trade</h2>
+    <h2>TradePro</h2>
     <span class="demo">DEMO ACCOUNT — VIRTUAL MONEY</span>
   </header>
 
@@ -306,7 +306,7 @@
 
         // Simplified simulation: a win returns twice the stake.
         // This is not Deriv's actual pricing or payout model.
-        const result = won ? stake : 0;
+        const result = won ? stake * 2: 0;
         balance += result;
         updateBalance();
 

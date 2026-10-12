@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login | TradePro</title>
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0b1220;
+  color: #f1f5f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  overflow: hidden;
+  position: relative;
+  padding: 16px;
+}
+
+.bg-animation { position: absolute; width: 100%; height: 100%; overflow: hidden; z-index: 1; top: 0; left: 0; }
+
+.orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; animation: floatOrb 10s infinite alternate ease-in-out; }
+.orb-1 { width: 300px; height: 300px; background: #55e6a5; top: -50px; left: -50px; }
+.orb-2 { width: 350px; height: 350px; background: #3b82f6; bottom: -80px; right: -80px; animation-delay: -5s; }
+
+@keyframes floatOrb {
+  0% { transform: translateY(0) scale(1); }
+  100% { transform: translateY(40px) scale(1.1); }
+}
+
+.login-card {
+  position: relative;
+  z-index: 2;
+  background: rgba(21, 34, 56, 0.85);
+  backdrop-filter: blur(10px);
+  padding: 35px;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(51, 65, 85, 0.5);
+  animation: cardEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes cardEntrance { to { opacity: 1; transform: translateY(0); } }
+
+.brand-header { text-align: center; margin-bottom: 25px; }
+
+h2 { color: #55e6a5; margin: 0 0 5px 0; font-size: 26px; letter-spacing: 0.5px; }
+
+.subtitle { color: #fbbf24; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+
+label { display: block; margin: 14px 0 6px; font-size: 13px; color: #a8b5c9; font-weight: bold; }
+
+input {
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  background: #0b1220;
+  color: white;
+  font-size: 15px;
+  transition: all 0.3s ease;
+}
+
+input:focus { outline: none; border-color: #55e6a5; box-shadow: 0 0 0 3px rgba(85, 230, 165, 0.15); }
+
+button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  border: none;
+  background: #16a36a;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 24px;
+  transition: background 0.2s, transform 0.1s;
+}
+button:hover { background: #15803d; }
+button:active { transform: scale(0.98); }
+
+.error {
+  background: rgba(220, 70, 85, 0.1);
+  border: 1px solid #dc4655;
+  color: #fca5a5;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-top: 15px;
+  text-align: center;
+  animation: shake 0.4s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.hint { color: #a8b5c9; font-size: 12px; text-align: center; margin-top: 20px; border-top: 1px solid #22334e; padding-top: 15px; }
+.hint b { color: #f1f5f9; }
+
+.success { background: rgba(22, 163, 106, 0.12); border: 1px solid #16a36a; color: #86efac; padding: 10px; border-radius: 6px; font-size: 13px; margin-top: 15px; text-align: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .orb, .login-card, .error { animation: none; }
+  .login-card { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-animation">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+</div>
+
+<div class="login-card">
+  <div class="brand-header">
+    <h2>TradePro</h2>
+    <div class="subtitle">Secure Trading Platform</div>
+  </div>
+
+  <form id="loginForm" novalidate>
+    <label for="email">Email address</label>
+    <input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+
+    <label for="password">Password</label>
+    <div style="position: relative;">
+      <input type="password" id="password" name="password" placeholder="••••••••" autocomplete="current-password" required minlength="6">
+      <span onclick="togglePassword()" role="button" aria-label="Show or hide password" style="position: absolute; right: 12px; top: 14px; cursor: pointer; color: #a8b5c9; user-select: none;">👁</span>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; font-size: 13px;">
+      <label style="margin: 0; display: flex; align-items: center; gap: 6px; cursor: pointer; font-weight: normal;">
+        <input type="checkbox" name="remember" style="width: auto; margin: 0;"> Remember me
+      </label>
+      <a href="#" style="color: #55e6a5; text-decoration: none;">Forgot password?</a>
+    </div>
+
+    <div id="message" aria-live="polite"></div>
+
+    <button type="submit">Log in</button>
+  </form>
+
+  <div class="hint">
+    Demo login: <b>demo@tradepro.com</b> / <b>123456</b>
+  </div>
+</div>
+
+<script>
+  function togglePassword() {
+    const input = document.getElementById("password");
+    input.type = input.type === "password" ? "text" : "password";
+  }
+
+  const form = document.getElementById("loginForm");
+  const message = document.getElementById("message");
+
+  function showMessage(text, type) {
+    // Re-create the element so the shake animation replays on every error
+    message.innerHTML = "";
+    const div = document.createElement("div");
+    div.className = type;
+    div.textContent = text;
+    message.appendChild(div);
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!email || !password) {
+      showMessage("Enter your email and password.", "error");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showMessage("Enter a valid email address.", "error");
+      return;
+    }
+    if (password.length < 6) {
+      showMessage("Password must be at least 6 characters.", "error");
+      return;
+    }
+
+    // Demo check only. Replace with a real request to your server.
+    if (email.toLowerCase() === "demo@tradepro.com" && password === "123456") {
+      showMessage("Login successful. Redirecting...", "success");
+      setTimeout(function () { window.location.href = "index.html"; }, 1200);
+    } else {
+      showMessage("Incorrect email or password. Try again.", "error");
+    }
+  });
+</script>
+</body>
+</html>
