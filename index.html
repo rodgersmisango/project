@@ -1,0 +1,341 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Misango Trade | Demo</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0b1220;
+      color: #f1f5f9;
+    }
+
+    header {
+      padding: 18px;
+      background: #111c30;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    header h2 {
+      margin: 0;
+      color: #55e6a5;
+    }
+
+    .demo {
+      color: #fbbf24;
+      font-size: 12px;
+    }
+
+    main {
+      max-width: 1000px;
+      margin: auto;
+      padding: 18px;
+    }
+
+    .card {
+      background: #152238;
+      padding: 18px;
+      border-radius: 12px;
+      margin-bottom: 16px;
+    }
+
+    .balance {
+      color: #55e6a5;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .market {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    #price {
+      font-size: 27px;
+      font-weight: bold;
+    }
+
+    canvas {
+      width: 100%;
+      height: 220px;
+      display: block;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 7px;
+      border: 1px solid #334155;
+      font-size: 15px;
+    }
+
+    input, select {
+      background: #0b1220;
+      color: white;
+    }
+
+    button {
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .up {
+      background: #16a36a;
+      color: white;
+    }
+
+    .down {
+      background: #dc4655;
+      color: white;
+    }
+
+    .trade-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .muted {
+      color: #a8b5c9;
+      font-size: 13px;
+    }
+
+    li {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h2>Misango Trade</h2>
+    <span class="demo">DEMO ACCOUNT — VIRTUAL MONEY</span>
+  </header>
+
+  <main>
+    <section class="card">
+      <p class="muted">Virtual account balance</p>
+      <div class="balance" id="balance">$10,000.00</div>
+      <p class="muted">This is a simulated account.</p>
+    </section>
+
+    <section class="card">
+      <div class="market">
+        <div>
+          <p class="muted">Demo market</p>
+          <h3>Sample Index</h3>
+        </div>
+        <div>
+          <p class="muted">Sample price</p>
+          <div id="price">1000.00</div>
+        </div>
+      </div>
+
+      <canvas id="chart"></canvas>
+      <p class="muted">
+        Illustrative price movements only. Not live market data.
+      </p>
+    </section>
+
+    <section class="card">
+      <h3>Place a demo trade</h3>
+
+      <label for="stake">Stake amount ($)</label>
+      <input id="stake" type="number"
+             value="10" min="1" step="1">
+
+      <label for="direction">Price direction</label>
+      <select id="direction">
+        <option value="up">Up</option>
+        <option value="down">Down</option>
+      </select>
+
+      <div class="trade-buttons">
+        <button class="up" onclick="placeTrade('up')">
+          Buy Up
+        </button>
+
+        <button class="down" onclick="placeTrade('down')">
+          Buy Down
+        </button>
+      </div>
+
+      <p id="message" class="muted">
+        Choose a direction to simulate a trade.
+      </p>
+    </section>
+
+    <section class="card">
+      <h3>Demo trade history</h3>
+      <ul id="history">
+        <li class="muted">No trades yet.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    let balance = 10000;
+    let price = 1000;
+    let prices = [1000];
+    let busy = false;
+
+    const priceText = document.getElementById("price");
+    const balanceText = document.getElementById("balance");
+    const message = document.getElementById("message");
+    const history = document.getElementById("history");
+    const canvas = document.getElementById("chart");
+    const ctx = canvas.getContext("2d");
+
+    function drawChart() {
+      const rect = canvas.getBoundingClientRect();
+      const width = rect.width;
+      const height = 220;
+
+      if (width === 0) return;
+
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = width * ratio;
+      canvas.height = height * ratio;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+
+      ctx.clearRect(0, 0, width, height);
+
+      const low = Math.min(...prices) - 2;
+      const high = Math.max(...prices) + 2;
+      const range = high - low || 1;
+
+      ctx.strokeStyle = "#334155";
+      ctx.lineWidth = 1;
+
+      for (let i = 1; i < 4; i++) {
+        const y = height * i / 4;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+
+      ctx.beginPath();
+      prices.forEach((value, i) => {
+        const x = i * width / Math.max(prices.length - 1, 1);
+        const y = height -
+          ((value - low) / range) * (height - 20) - 10;
+
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+
+      ctx.strokeStyle = "#55e6a5";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    function updatePrice() {
+      price += (Math.random() - 0.5) * 4;
+      prices.push(price);
+
+      if (prices.length > 60) prices.shift();
+
+      priceText.textContent = price.toFixed(2);
+      drawChart();
+    }
+
+    function updateBalance() {
+      balanceText.textContent =
+        "$" + balance.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+    }
+
+    function placeTrade(direction) {
+      if (busy) {
+        message.textContent = "Wait for the current demo trade to finish.";
+        return;
+      }
+
+      const stake = Number(
+        document.getElementById("stake").value
+      );
+
+      if (!Number.isFinite(stake) ||
+          stake <= 0 ||
+          stake > balance) {
+        message.textContent = "Enter a valid stake within your balance.";
+        return;
+      }
+
+      balance -= stake;
+      updateBalance();
+
+      const entryPrice = price;
+      busy = true;
+
+      message.textContent =
+        "Demo trade opened at " + entryPrice.toFixed(2);
+
+      setTimeout(() => {
+        updatePrice();
+
+        const exitPrice = price;
+        const won = direction === "up"
+          ? exitPrice > entryPrice
+          : exitPrice < entryPrice;
+
+        // Simplified simulation: a win returns twice the stake.
+        // This is not Deriv's actual pricing or payout model.
+        const result = won ? stake : 0;
+        balance += result;
+        updateBalance();
+
+        const item = document.createElement("li");
+        item.textContent =
+          direction.toUpperCase() +
+          " | Entry: " + entryPrice.toFixed(2) +
+          " | Exit: " + exitPrice.toFixed(2) +
+          " | " + (won ? "WIN" : "LOSS") +
+          " | Net: " +
+          (won ? "+" : "-") + "$" + stake.toFixed(2);
+
+        if (history.querySelector(".muted")) {
+          history.innerHTML = "";
+        }
+
+        history.prepend(item);
+        message.textContent = won
+          ? "Demo result: WIN. Net profit $" + stake.toFixed(2)
+          : "Demo result: LOSS. Stake lost.";
+
+        busy = false;
+      }, 3000);
+    }
+
+    window.addEventListener("resize", drawChart);
+
+    drawChart();
+    setInterval(updatePrice, 1000);
+  </script>
+</body>
+</html>
