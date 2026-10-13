@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Misango Trade demo trading interface. Simulated trading only; no real funds are moved.">
+  <title>Misango Trade | Demo Trading</title>
+  <style>
+    :root {
+      --bg: #07111f; --panel: #101d30; --panel2: #14243a; --line: #263852;
+      --text: #edf4ff; --muted: #9db0ca; --green: #23d18b; --red: #ff667d;
+      --gold: #f6c453; --blue: #4e8cff; --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: radial-gradient(circle at top right, #172b49 0, var(--bg) 42%); color: var(--text); font: 15px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+    button, input, select { font: inherit; }
+    button { cursor: pointer; border: 0; border-radius: 11px; padding: 11px 15px; font-weight: 700; transition: transform .15s, opacity .15s; }
+    button:hover { transform: translateY(-1px); } button:disabled { cursor: not-allowed; opacity: .5; transform: none; }
+    input { width: 100%; background: #091526; border: 1px solid var(--line); color: var(--text); border-radius: 10px; padding: 12px; outline: none; }
+    input:focus { border-color: var(--blue); box-shadow: 0 0 0 3px #4e8cff22; }
+    label { display: block; color: var(--muted); font-size: .86rem; margin: 12px 0 6px; }
+    .hidden { display: none !important; }
+    .wrap { max-width: 1180px; padding: 22px; margin: auto; }
+    header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 24px; }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .logo { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 15px; background: linear-gradient(135deg, var(--gold), #f28b35); font-size: 1.55rem; box-shadow: 0 8px 24px #f6c45322; }
+    h1, h2, h3, p { margin-top: 0; } h1 { font-size: 1.4rem; margin-bottom: 2px; } h2 { font-size: 1.15rem; margin-bottom: 14px; } h3 { font-size: 1rem; margin-bottom: 8px; }
+    .muted, small { color: var(--muted); } .eyebrow { text-transform: uppercase; letter-spacing: .12em; color: var(--gold); font-size: .72rem; font-weight: 800; }
+    .pill { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; color: var(--muted); font-size: .8rem; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); display: inline-block; }
+    .card { background: linear-gradient(155deg, #13243a, #0d192a); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: 0 16px 38px #0002; }
+    .auth { max-width: 460px; margin: 40px auto; }
+    .tabs { display: grid; grid-template-columns: 1fr 1fr; background: #091526; padding: 5px; border-radius: 12px; gap: 5px; margin: 18px 0; }
+    .tabs button { color: var(--muted); background: transparent; } .tabs button.active { color: var(--text); background: #223854; }
+    .primary { background: linear-gradient(135deg, var(--blue), #6a62ed); color: white; }
+    .secondary { background: #24364f; color: var(--text); border: 1px solid #334a69; }
+    .gold { background: var(--gold); color: #201700; } .buy { background: #0d9f6e; color: white; } .sell { background: #cf405c; color: white; }
+    .full { width: 100%; margin-top: 16px; } .linkbtn { background: none; color: #8eb7ff; padding: 4px; }
+    .notice { border: 1px solid #7b6026; background: #3c2e12aa; color: #ffe6a2; border-radius: 12px; padding: 11px 13px; font-size: .85rem; margin-top: 15px; }
+    .success { color: var(--green); } .danger { color: var(--red); }
+    .dashboard-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(290px, .85fr); gap: 18px; }
+    .stack { display: grid; gap: 18px; align-content: start; }
+    .balance { background: linear-gradient(130deg, #1c3760, #14233d 75%); border-color: #36537b; }
+    .balance-row { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+    .big-money { font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 800; letter-spacing: -.04em; margin: 8px 0 3px; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 18px; }
+    .stat { background: #09152688; padding: 12px; border-radius: 12px; min-width: 0; }
+    .stat strong { display: block; margin-top: 4px; overflow-wrap: anywhere; }
+    .mode-row { display: flex; gap: 8px; } .mode-row button { flex: 1; }
+    .chart-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+    .chart { height: 205px; margin-top: 15px; border-radius: 13px; background: linear-gradient(180deg, #0c1b2d, #0b1727); overflow: hidden; position: relative; border: 1px solid #20324a; }
+    .chart svg { width: 100%; height: 100%; display: block; }
+    .chart-label { position: absolute; top: 12px; left: 12px; font-size: .78rem; color: var(--muted); }
+    .trade-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+    .trade-actions button { padding: 13px 8px; }
+    .trade-info { margin-top: 12px; color: var(--muted); font-size: .83rem; }
+    .section-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+    .table-wrap { overflow-x: auto; } table { width: 100%; border-collapse: collapse; font-size: .86rem; min-width: 430px; }
+    th, td { text-align: left; border-bottom: 1px solid #25354c; padding: 11px 8px; } th { color: var(--muted); font-weight: 600; }
+    .empty { color: var(--muted); padding: 18px 0; text-align: center; }
+    .modal-backdrop { position: fixed; inset: 0; background: #0009; display: grid; place-items: center; padding: 18px; z-index: 10; }
+    .modal { width: min(440px, 100%); background: #101d30; border: 1px solid var(--line); border-radius: 18px; padding: 22px; max-height: 90vh; overflow: auto; }
+    .modal-actions { display: flex; gap: 8px; margin-top: 16px; } .modal-actions button { flex: 1; }
+    .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); padding: 12px 17px; border-radius: 12px; background: #1c2d45; border: 1px solid #3a5272; box-shadow: 0 10px 30px #0005; z-index: 20; max-width: calc(100% - 30px); }
+    footer { text-align: center; color: var(--muted); font-size: .8rem; padding: 24px 0 8px; }
+    @media (max-width: 780px) { .dashboard-grid { grid-template-columns: 1fr; } .wrap { padding: 14px; } .card { padding: 16px; } header { align-items: flex-start; } .stats { grid-template-columns: 1fr 1fr; } .stats .stat:last-child { grid-column: span 2; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">💰</div>
+        <div><div class="eyebrow">Demo & learning platform</div><h1>Misango Trade</h1><div class="muted">Your money bag, from KES to USD</div></div>
+      </div>
+      <div class="pill"><span class="dot"></span> Prototype mode</div>
+    </header>
+
+    <section id="authScreen" class="auth card">
+      <div class="eyebrow">Welcome to Misango Trade</div>
+      <h2 style="font-size:1.45rem;margin-top:7px">Trade with a demo balance</h2>
+      <p class="muted">Create a local demo account or use the demo login. No real funds are moved.</p>
+      <div class="tabs"><button id="loginTab" class="active" type="button">Login</button><button id="registerTab" type="button">Create account</button></div>
+      <form id="loginForm">
+        <label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" placeholder="trader@example.com" required>
+        <label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Enter password" required>
+        <button class="primary full" type="submit">Access trading platform</button>
+        <button class="secondary full" id="demoLogin" type="button">Use demo login</button>
+      </form>
+      <form id="registerForm" class="hidden">
+        <label for="fullName">Full name</label><input id="fullName" autocomplete="name" placeholder="Jane Wanjiru" required>
+        <label for="registerEmail">Email</label><input id="registerEmail" type="email" autocomplete="email" placeholder="you@example.com" required>
+        <label for="phone">Phone (M-Pesa)</label><input id="phone" type="tel" autocomplete="tel" placeholder="254712345678" pattern="254[0-9]{9}" title="Use 12 digits starting with 254" required>
+        <label for="registerPassword">Password (at least 6 characters)</label><input id="registerPassword" type="password" minlength="6" autocomplete="new-password" required>
+        <button class="primary full" type="submit">Create account & start demo</button>
+      </form>
+      <div class="notice">Demo access: <strong>trader@misango.com</strong> / <strong>demo123</strong><br>Each demo account starts with $10,000 in virtual funds. This prototype stores demo data in this browser only.</div>
+    </section>
+
+    <main id="appScreen" class="hidden">
+      <div class="dashboard-grid">
+        <div class="stack">
+          <section class="card balance">
+            <div class="balance-row">
+              <div><div class="eyebrow">Virtual balance · <span id="balanceModeText">DEMO USD</span></div><div id="balanceMain" class="big-money">$10,000.00</div><div id="balanceConverted" class="muted">≈ KES 1,300,000.00</div></div>
+              <div class="mode-row"><button id="demoMode" class="gold" type="button">DEMO $</button><button id="realMode" class="secondary" type="button">REAL KES</button></div>
+            </div>
+            <div class="stats">
+              <div class="stat"><span class="muted">Demo USD</span><strong id="demoBalanceStat">$10,000.00</strong></div>
+              <div class="stat"><span class="muted">Real KES</span><strong id="realKesStat">KES 0.00</strong></div>
+              <div class="stat"><span class="muted">Exchange rate</span><strong>1 USD = 130 KES</strong></div>
+            </div>
+            <div id="realWarning" class="notice hidden">Real-money trading and deposits are not implemented. This is a simulation; do not enter payment credentials or send money.</div>
+          </section>
+
+          <section class="card">
+            <div class="chart-head"><div><div class="eyebrow">Market</div><h2 style="margin:4px 0">Sample Index</h2></div><div style="text-align:right"><div class="muted">Simulated price</div><strong id="priceLabel">1000.00</strong></div></div>
+            <div class="chart"><div class="chart-label">ILLUSTRATIVE PRICE FEED</div><svg id="chartSvg" viewBox="0 0 700 210" preserveAspectRatio="none" aria-label="Simulated market chart"><defs><linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#23d18b" stop-opacity=".25"/><stop offset="100%" stop-color="#23d18b" stop-opacity="0"/></linearGradient></defs><g id="chartGrid" stroke="#263852" stroke-width="1"><path d="M0 45H700 M0 90H700 M0 135H700 M0 180H700"/></g><path id="chartArea" fill="url(#areaFill)" d=""></path><path id="chartLine" fill="none" stroke="#23d18b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d=""></path></svg></div>
+            <p class="trade-info">Simulated price feed — illustrative movements only, not live market data.</p>
+          </section>
+
+          <section class="card">
+            <div class="eyebrow">Place a trade</div><h2 style="margin-top:5px">Trade direction · <span id="tradeModeLabel">DEMO</span></h2>
+            <label for="stake">Stake (USD)</label><input id="stake" type="number" min="1" max="10000" step="1" value="10">
+            <div class="trade-actions"><button id="buyUp" class="buy" type="button">▲ Buy Up</button><button id="buyDown" class="sell" type="button">▼ Buy Down</button></div>
+            <p class="trade-info">Each trade settles after 3 seconds. A simulated win pays 1.85× the stake in total; a loss loses the stake. Results are random and are not a prediction or investment advice.</p>
+          </section>
+        </div>
+
+        <aside class="stack">
+          <section class="card">
+            <div class="section-head"><h2>Account</h2><button id="logoutBtn" class="secondary" type="button">Logout</button></div>
+            <div class="muted">Signed in as</div><strong id="accountName">Demo Trader</strong><div id="accountEmail" class="muted" style="overflow-wrap:anywhere">trader@misango.com</div>
+            <div class="notice">This is a front-end prototype. It has no secure server, payment gateway, or real brokerage connection.</div>
+          </section>
+          <section class="card"><h2>Balances overview</h2>
+            <div class="section-head"><span class="muted">DEMO USD</span><strong id="overviewDemo">$10,000.00</strong></div><div class="section-head" style="margin-top:10px"><span class="muted">REAL KES</span><strong id="overviewKes">KES 0.00</strong></div><div class="section-head" style="margin-top:10px"><span class="muted">REAL USD equivalent</span><strong id="overviewRealUsd">$0.00</strong></div>
+          </section>
+          <section class="card">
+            <h2>Deposit funds</h2><p class="muted">M-Pesa deposits are not connected in this demo.</p>
+            <button id="depositBtn" class="gold full" type="button">Open deposit form</button>
+          </section>
+        </aside>
+      </div>
+      <div class="stack" style="margin-top:18px">
+        <section class="card"><div class="section-head"><h2>Trade history — demo</h2><button id="clearHistory" class="secondary" type="button">Clear history</button></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Direction</th><th>Stake</th><th>Result</th><th>P/L</th></tr></thead><tbody id="tradeRows"><tr><td colspan="5" class="empty">No trades yet. Place a demo trade to get started.</td></tr></tbody></table></div></section>
+        <section class="card"><h2>Transactions</h2><div id="transactions" class="empty">No transactions yet. Demo trades will appear in trade history.</div></section>
+      </div>
+    </main>
+    <footer>Misango Trade · Educational demo only · No real market data, brokerage services, or payments.</footer>
+  </div>
+
+  <div id="depositModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="depositTitle">
+    <div class="modal"><h2 id="depositTitle">M-Pesa deposit (demo only)</h2><p class="muted">This form does not initiate an STK push or transfer money. Do not enter your M-Pesa PIN.</p>
+      <label for="depositPhone">M-Pesa phone number</label><input id="depositPhone" type="tel" placeholder="254712345678" pattern="254[0-9]{9}">
+      <label for="depositAmount">Amount (KES)</label><input id="depositAmount" type="number" min="1" step="1" placeholder="1000">
+      <div class="notice">Payments are not integrated. Confirming only adds a note to this browser's demo transaction list; it does not credit a balance.</div>
+      <div class="modal-actions"><button id="cancelDeposit" class="secondary" type="button">Cancel</button><button id="confirmDeposit" class="gold" type="button">Record demo request</button></div>
+    </div>
+  </div>
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script>
+    "use strict";
+    const RATE = 130;
+    const DEMO_EMAIL = "trader@misango.com";
+    const DEMO_PASSWORD = "demo123";
+    const $ = (id) => document.getElementById(id);
+    let currentUser = null;
+    let mode = "demo";
+    let demoBalance = 10000;
+    let realKes = 0;
+    let price = 1000;
+    let history = [];
+    let transactions = [];
+    let pricePoints = Array.from({length: 35}, (_, i) => 1000 + Math.sin(i / 3) * 10 + Math.cos(i / 5) * 7);
+    let toastTimer;
+
+    function money(value, currency = "USD") {
+      return new Intl.NumberFormat("en-US", {style:"currency", currency, minimumFractionDigits:2, maximumFractionDigits:2}).format(value);
+    }
+    function showToast(message) {
+      $("toast").textContent = message;
+      $("toast").classList.remove("hidden");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => $("toast").classList.add("hidden"), 3000);
+    }
+    function setAuthTab(tab) {
+      const login = tab === "login";
+      $("loginTab").classList.toggle("active", login);
+      $("registerTab").classList.toggle("active", !login);
+      $("loginForm").classList.toggle("hidden", !login);
+      $("registerForm").classList.toggle("hidden", login);
+    }
+    $("loginTab").addEventListener("click", () => setAuthTab("login"));
+    $("registerTab").addEventListener("click", () => setAuthTab("register"));
+
+    function enterApp(user) {
+      currentUser = user;
+      demoBalance = Number.isFinite(user.demoBalance) ? user.demoBalance : 10000;
+      realKes = Number.isFinite(user.realKes) ? user.realKes : 0;
+      history = Array.isArray(user.history) ? user.history : [];
+      transactions = Array.isArray(user.transactions) ? user.transactions : [];
+      mode = "demo";
+      $("authScreen").classList.add("hidden");
+      $("appScreen").classList.remove("hidden");
+      $("accountName").textContent = user.name || "Demo Trader";
+      $("accountEmail").textContent = user.email;
+      $("realWarning").classList.add("hidden");
+      render();
+      showToast("Demo account opened. No real funds are connected.");
+    }
+    function saveUser() {
+      if (!currentUser || currentUser.demoAccount) return;
+      const saved = {...currentUser, demoBalance, realKes, history, transactions};
+      localStorage.setItem("misango_user_" + currentUser.email.toLowerCase(), JSON.stringify(saved));
+    }
+    $("demoLogin").addEventListener("click", () => enterApp({name:"Demo Trader", email:DEMO_EMAIL, demoAccount:true, demoBalance:10000, realKes:0, history:[], transactions:[]}));
+    $("loginForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const email = $("loginEmail").value.trim().toLowerCase();
+      const password = $("loginPassword").value;
+      if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
+        enterApp({name:"Demo Trader", email:DEMO_EMAIL, demoAccount:true, demoBalance:10000, realKes:0, history:[], transactions:[]});
+        return;
+      }
+      const stored = localStorage.getItem("misango_user_" + email);
+      if (!stored) { showToast("Account not found in this browser. Register or use demo login."); return; }
+      try {
+        const user = JSON.parse(stored);
+        if (user.password !== password) { showToast("Incorrect email or password."); return; }
+        enterApp(user);
+      } catch { showToast("Could not read this local account."); }
+    });
+    $("registerForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const name = $("fullName").value.trim();
+      const email = $("registerEmail").value.trim().toLowerCase();
+      const phone = $("phone").value.trim();
+      const password = $("registerPassword").value;
+      if (!name || !email || !/^254\d{9}$/.test(phone) || password.length < 6) { showToast("Check the registration details and try again."); return; }
+      if (email === DEMO_EMAIL || localStorage.getItem("misango_user_" + email)) { showToast("An account with this email already exists in this browser."); return; }
+      // This is intentionally a local-only prototype. Never use this storage pattern for a production account system.
+      const user = {name, email, phone, password, demoBalance:10000, realKes:0, history:[], transactions:[]};
+      localStorage.setItem("misango_user_" + email, JSON.stringify(user));
+      enterApp(user);
+    });
+    $("logoutBtn").addEventListener("click", () => {
+      saveUser(); currentUser = null;
+      $("appScreen").classList.add("hidden"); $("authScreen").classList.remove("hidden");
+      $("loginForm").reset(); $("registerForm").reset(); setAuthTab("login");
+      showToast("Logged out.");
+    });
+    function setMode(next) {
+      mode = next;
+      $("demoMode").className = mode === "demo" ? "gold" : "secondary";
+      $("realMode").className = mode === "real" ? "gold" : "secondary";
+      $("realWarning").classList.toggle("hidden", mode !== "real");
+      $("tradeModeLabel").textContent = mode.toUpperCase();
+      $("stake").disabled = mode === "real";
+      $("buyUp").disabled = mode === "real";
+      $("buyDown").disabled = mode === "real";
+      if (mode === "real") showToast("Real trading is disabled in this prototype.");
+      render();
+    }
+    $("demoMode").addEventListener("click", () => setMode("demo"));
+    $("realMode").addEventListener("click", () => setMode("real"));
+
+    function render() {
+      $("balanceModeText").textContent = mode === "demo" ? "DEMO USD" : "REAL KES";
+      $("balanceMain").textContent = mode === "demo" ? money(demoBalance) : money(realKes, "KES");
+      $("balanceConverted").textContent = mode === "demo" ? "≈ " + money(demoBalance * RATE, "KES") : "≈ " + money(realKes / RATE);
+      $("demoBalanceStat").textContent = money(demoBalance);
+      $("realKesStat").textContent = money(realKes, "KES");
+      $("overviewDemo").textContent = money(demoBalance);
+      $("overviewKes").textContent = money(realKes, "KES");
+      $("overviewRealUsd").textContent = money(realKes / RATE);
+      $("priceLabel").textContent = price.toFixed(2);
+      renderHistory(); renderTransactions(); drawChart(); saveUser();
+    }
+    function renderHistory() {
+      const tbody = $("tradeRows");
+      if (!history.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty">No trades yet. Place a demo trade to get started.</td></tr>'; return; }
+      tbody.innerHTML = history.slice().reverse().map(t => `<tr><td>${escapeHtml(t.time)}</td><td>${escapeHtml(t.direction)}</td><td>${money(t.stake)}</td><td class="${t.win ? "success" : "danger"}">${t.win ? "WIN" : "LOSS"}</td><td class="${t.pnl >= 0 ? "success" : "danger"}">${t.pnl >= 0 ? "+" : ""}${money(t.pnl)}</td></tr>`).join("");
+    }
+    function renderTransactions() {
+      const container = $("transactions");
+      if (!transactions.length) { container.className = "empty"; container.textContent = "No transactions yet. Demo trades will appear in trade history."; return; }
+      container.className = "";
+      container.innerHTML = transactions.slice().reverse().map(t => `<div class="section-head" style="padding:10px 0;border-bottom:1px solid #25354c"><span>${escapeHtml(t.label)}<br><small>${escapeHtml(t.time)}</small></span><strong>${escapeHtml(t.amount)}</strong></div>`).join("");
+    }
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, (ch) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+    }
+    function drawChart() {
+      const min = Math.min(...pricePoints) - 5, max = Math.max(...pricePoints) + 5;
+      const pts = pricePoints.map((p, i) => `${(i / (pricePoints.length - 1)) * 700},${195 - ((p - min) / (max - min || 1)) * 165}`);
+      const path = "M" + pts.join(" L");
+      $("chartLine").setAttribute("d", path);
+      $("chartArea").setAttribute("d", path + " L700,210 L0,210 Z");
+      $("chartLine").setAttribute("stroke", pricePoints.at(-1) >= pricePoints.at(-2) ? "#23d18b" : "#ff667d");
+    }
+    function placeTrade(direction) {
+      if (mode !== "demo") { showToast("Switch to DEMO to place simulated trades."); return; }
+      const stake = Number($("stake").value);
+      if (!Number.isFinite(stake) || stake <= 0 || stake > demoBalance) { showToast("Enter a valid stake within your demo balance."); return; }
+      $("buyUp").disabled = $("buyDown").disabled = true;
+      demoBalance -= stake;
+      const startPrice = price;
+      showToast(`${direction} trade opened at ${startPrice.toFixed(2)}. Settling in 3 seconds…`);
+      setTimeout(() => {
+        const win = Math.random() < 0.5;
+        const payout = win ? stake * 1.85 : 0;
+        if (win) demoBalance += payout;
+        const pnl = win ? stake * 0.85 : -stake;
+        const record = {time:new Date().toLocaleTimeString(), direction, stake, win, pnl, startPrice};
+        history.push(record);
+        transactions.push({label:`Demo trade · ${direction} · ${win ? "Win" : "Loss"}`, time:new Date().toLocaleString(), amount:(pnl >= 0 ? "+" : "") + money(pnl)});
+        price += (Math.random() - 0.49) * 7;
+        pricePoints.push(price); if (pricePoints.length > 45) pricePoints.shift();
+        $("buyUp").disabled = $("buyDown").disabled = false;
+        render();
+        showToast(`${win ? "Demo win" : "Demo loss"}: ${pnl >= 0 ? "+" : ""}${money(pnl)}. No real money moved.`);
+      }, 3000);
+      render();
+    }
+    $("buyUp").addEventListener("click", () => placeTrade("BUY UP"));
+    $("buyDown").addEventListener("click", () => placeTrade("BUY DOWN"));
+    $("clearHistory").addEventListener("click", () => { history = []; renderHistory(); saveUser(); showToast("Trade history cleared."); });
+
+    $("depositBtn").addEventListener("click", () => $("depositModal").classList.remove("hidden"));
+    $("cancelDeposit").addEventListener("click", () => $("depositModal").classList.add("hidden"));
+    $("depositModal").addEventListener("click", (event) => { if (event.target === $("depositModal")) $("depositModal").classList.add("hidden"); });
+    $("confirmDeposit").addEventListener("click", () => {
+      const phone = $("depositPhone").value.trim();
+      const amount = Number($("depositAmount").value);
+      if (!/^254\d{9}$/.test(phone) || !Number.isFinite(amount) || amount <= 0) { showToast("Enter a valid 254 phone number and amount."); return; }
+      transactions.push({label:"Demo M-Pesa deposit request (not paid)", time:new Date().toLocaleString(), amount:money(amount, "KES")});
+      $("depositModal").classList.add("hidden"); $("depositPhone").value = ""; $("depositAmount").value = "";
+      renderTransactions(); saveUser(); showToast("Demo request recorded locally. No payment was made.");
+    });
+
+    // The market is deliberately simulated and is not connected to a live provider.
+    setInterval(() => {
+      if ($("appScreen").classList.contains("hidden")) return;
+      price += (Math.random() - 0.5) * 3.2;
+      pricePoints.push(price); if (pricePoints.length > 45) pricePoints.shift();
+      $("priceLabel").textContent = price.toFixed(2); drawChart();
+    }, 2500);
+  </script>
+</body>
+</html>
